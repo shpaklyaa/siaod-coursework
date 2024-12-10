@@ -1,4 +1,4 @@
-#include <vector>
+ #include <vector>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -10,7 +10,7 @@
 #include <iomanip>
 #include <cstring>
 #include <map>
-#include <bitset>
+#include <bitset> // Добавлено
 
 struct Record
 {
@@ -18,12 +18,6 @@ struct Record
     unsigned short int deposit_summ;
     char deposit_date[10];
     char advocate_fullname[22];
-};
-
-struct queue
-{
-    Record *record;
-    queue *next = NULL;
 };
 
 struct tree
@@ -41,6 +35,7 @@ struct date
     int day;
 };
 
+// Вывод заголовка таблицы
 void printTableHeader()
 {
     std::cout << "+-----+--------------------------------+-----------------+-------+-------+------------+\n";
@@ -53,6 +48,7 @@ void printTableHeader()
     std::cout << "+-----+--------------------------------+-----------------+-------+-------+------------+\n";
 }
 
+// Вывод одной записи
 void printRecord(const Record *rec, int index)
 {
     std::cout << "| " << std::setw(3) << (index + 1) << " | ";
@@ -99,10 +95,11 @@ void printRecord(const Record *rec)
     std::cout << " |\n";
 }
 
+// Вывод страницы записей
 void printPage(int n, Record *indexArray[], int totalRecords)
 {
     system("CLS");
-    printTableHeader();
+    printTableHeader(); // Печатаем заголовок таблицы
     int start = n;
     int end = (n + 20 > totalRecords) ? totalRecords : n + 20;
 
@@ -111,6 +108,7 @@ void printPage(int n, Record *indexArray[], int totalRecords)
         printRecord(indexArray[i], i);
     }
 
+    // Добавляем нижнюю границу таблицы
     std::cout << "+-----+--------------------------------+-----------------+-------+-------+------------+\n";
 }
 
@@ -126,11 +124,12 @@ void printPageAVL(int n, const std::vector<Record> &records, int totalRecords)
         printRecord(&records[i], i);
     }
 
+    // Добавляем нижнюю границу таблицы
     std::cout << "+-----+--------------------------------+-----------------+-------+-------+------------+\n";
 }
 
 date stringToDate(Record *rec)
-{
+{ // Преобразование строки в дату
     date result;
     char buf[10];
     memcpy(buf, rec->deposit_date, 2);
@@ -148,17 +147,21 @@ int compDate(Record *rec1, Record *rec2)
     date d1 = stringToDate(rec1);
     date d2 = stringToDate(rec2);
 
+    // Сравниваем годы
     if (d1.year != d2.year)
     {
         return d1.year - d2.year;
     }
+    // Сравниваем месяцы
     if (d1.month != d2.month)
     {
         return d1.month - d2.month;
     }
-    return d1.day - d2.day;
+    // Сравниваем дни
+    return d1.day - d2.day; // Вернет 0, если равны, -1 если меньше, 1 если больше
 }
 
+// Добавление элемента в кучу
 void AddElementToHeap1(Record *arr[], int L, int R)
 {
     Record *x = arr[L - 1];
@@ -188,6 +191,7 @@ void AddElementToHeap1(Record *arr[], int L, int R)
     arr[i - 1] = x;
 }
 
+// Сортировка массива
 void HeapSort(Record *arr[], int size)
 {
     int L = size / 2;
@@ -210,9 +214,10 @@ void HeapSort(Record *arr[], int size)
     std::cout << "База данных отсортирована по ключу, вкладу и его дате.\n";
 }
 
+// Функция для сравнения элементов по сумме вклада
 bool compareByDepositAmount(const Record &a, const Record &b)
 {
-    return a.deposit_summ < b.deposit_summ;
+    return a.deposit_summ < b.deposit_summ; // Сравнение по возрастанию суммы
 }
 
 int BinarySearch(Record **records, int totalRecords, unsigned short int deposit_summ)
@@ -239,13 +244,14 @@ int BinarySearch(Record **records, int totalRecords, unsigned short int deposit_
         return -1;
 }
 
+// Функция для выполнения двоичного поиска в дереве
 int BinarySearchAVL(Record *records, int totalRecords, unsigned short int deposit_summ)
 {
     int L = 0, R = totalRecords - 1;
 
     while (L <= R)
     {
-        int m = L + (R - L) / 2;
+        int m = L + (R - L) / 2; // Избегание переполнения
 
         if (records[m].deposit_summ < deposit_summ)
         {
@@ -257,10 +263,10 @@ int BinarySearchAVL(Record *records, int totalRecords, unsigned short int deposi
         }
         else
         {
-            return m;
+            return m; // Вернуть индекс, если найдено
         }
     }
-    return -1;
+    return -1; // Если не найдено
 }
 
 int findRecordsAmount(Record **records, int totalRecords, int depositAmount, int amount)
@@ -276,6 +282,15 @@ int findRecordsAmount(Record **records, int totalRecords, int depositAmount, int
     return amount;
 }
 
+Record **requiredRecords(Record **indexArray, Record **indexArrayKey, int index, int amount)
+{
+    for (int i = 0; i < amount; i++)
+    {
+        indexArrayKey[i] = indexArray[index + i];
+    }
+    return indexArrayKey;
+}
+
 void printRequiredRecords(Record **records, int amount)
 {
     printTableHeader();
@@ -283,7 +298,7 @@ void printRequiredRecords(Record **records, int amount)
     {
         std::cout << "| " << std::setw(3) << (i + 1) << " | ";
 
-        system("chcp 866 > nul");
+        system("chcp 866 > nul"); // Для правильного отображения русских символов
         std::cout << std::setw(30) << records[i]->user_fullname;
         system("chcp 65001 > nul");
 
@@ -309,6 +324,7 @@ void printRequiredRecords(Record **records, int amount)
     }
 }
 
+// Функции для поворотов АВЛ-дерева
 void rotateRR(tree *&p)
 {
     tree *q = p->R;
@@ -450,99 +466,13 @@ bool addAVL(tree *&p, Record *&record, bool &rost)
     return true;
 }
 
-queue *createNodeQueue(Record *record)
-{
-    queue *new_node = new queue;
-    if (new_node != NULL)
-    {
-        new_node->record = record;
-        new_node->next = NULL;
-    }
-    return new_node;
-}
-
-queue *addNodeQueue(queue *head, Record *record)
-{
-    if (head == NULL)
-    {
-        head = createNodeQueue(record);
-    }
-    else
-    {
-        queue *cursor = head;
-        while (cursor->next != NULL)
-        {
-            cursor = cursor->next;
-        }
-        queue *new_node = createNodeQueue(record);
-        cursor->next = new_node;
-    }
-    return head;
-}
-
-void printQueue(int n, queue *head, int total)
-{
-    system("CLS");
-    printTableHeader();
-    int start = n;
-    int end = (n + 20 > total) ? total : n + 20;
-
-    int count = 0;
-    while (head != NULL && count < start)
-    {
-        head = head->next;
-        count++;
-    }
-
-    while (head != NULL && start < end)
-    {
-        printRecord(head->record, start);
-        head = head->next;
-        start++;
-    }
-    std::cout << "+------+----------------------------------+--------------------+-------+-------+------------+\n";
-}
-
-queue *indexQueue(queue *head, int index)
-{
-    int count = 0;
-    while (head != NULL && count < index)
-    {
-        head = head->next;
-        count++;
-    }
-    return head;
-}
-
-queue *clearQueue(queue *head)
-{
-    queue *cursor;
-    while (head != NULL)
-    {
-        cursor = head->next;
-        delete[] head;
-        head = cursor;
-    }
-    return head;
-}
-
-queue *requiredRecords(Record **indexArray, queue *head, int index, int amount)
-{
-    for (int i = 0; i < amount; i++)
-    {
-        head = addNodeQueue(head, indexArray[index]);
-        index++;
-    }
-    return head;
-}
-
-tree *buildAVLTree(queue *head, int amount)
+tree *buildAVLTree(Record **indexArrayKey, int amount)
 {
     tree *root = nullptr;
     bool rost = false;
     for (int i = 0; i < amount; i++)
     {
-        addAVL(root, indexQueue(head, i)->record, rost);
+        addAVL(root, indexArrayKey[i], rost);
     }
     return root;
 }
@@ -580,6 +510,7 @@ int SearchInTree(tree *p, int c, const char *advocatKey)
     return c;
 }
 
+// Структура узла дерева Хаффмана
 struct HuffmanNode
 {
     char ch;
@@ -590,6 +521,7 @@ struct HuffmanNode
     HuffmanNode(char character, int frequency) : ch(character), freq(frequency), left(nullptr), right(nullptr) {}
 };
 
+// Компаратор для приоритетной очереди
 struct CompareNode
 {
     bool operator()(HuffmanNode *const &a, HuffmanNode *const &b) const
@@ -598,6 +530,7 @@ struct CompareNode
     }
 };
 
+// Построение дерева Хаффмана
 HuffmanNode *buildHuffmanTree(const std::unordered_map<char, int> &frequencies)
 {
     std::priority_queue<HuffmanNode *, std::vector<HuffmanNode *>, CompareNode> pq;
@@ -624,16 +557,22 @@ HuffmanNode *buildHuffmanTree(const std::unordered_map<char, int> &frequencies)
     return pq.top();
 }
 
+// Рекурсивная функция для получения кодов символов
 void getHuffmanCodes(HuffmanNode *root, const std::string &code, std::unordered_map<char, std::string> &codeMap)
 {
     if (!root)
         return;
+
+    // if ((int)root->ch != 0)
+    // {
     codeMap[(int)root->ch] = code;
+    // }
 
     getHuffmanCodes(root->left, code + "0", codeMap);
     getHuffmanCodes(root->right, code + "1", codeMap);
 }
 
+// Освобождение памяти дерева Хаффмана
 void freeHuffmanTree(HuffmanNode *root)
 {
     if (!root)
@@ -645,8 +584,11 @@ void freeHuffmanTree(HuffmanNode *root)
 
 void encodeMenuOption()
 {
+    // system("CLS");
+    // system("chcp 866 > nul");
     std::string filename = "testBase3.dat";
 
+    // Read characters and count frequencies
     std::unordered_map<char, int> frequencies;
     std::ifstream file(filename, std::ios::binary);
     if (!file)
@@ -658,6 +600,7 @@ void encodeMenuOption()
     char ch;
     int totalSymbols = 0;
 
+    // sanechkeno
     while (!file.read((char *)&ch, sizeof(ch)).eof())
     {
         totalSymbols++;
@@ -671,17 +614,31 @@ void encodeMenuOption()
         }
     }
 
+    // while (file.get(ch)) {
+    //     if((int)ch < 0) {
+    //         frequencies[(int)ch + 256]++;
+    //     } else{
+    //         frequencies[ch]++;
+    //     }
+    //     totalSymbols++;
+    // }
     file.close();
 
+    // Build Huffman tree
     HuffmanNode *root = buildHuffmanTree(frequencies);
 
+    // Get Huffman codes
     std::unordered_map<char, std::string> codeMap;
     getHuffmanCodes(root, "", codeMap);
 
+    // Store frequencies and codes in a vector for sorting
     std::vector<std::pair<char, int>> freqVector(frequencies.begin(), frequencies.end());
     sort(freqVector.begin(), freqVector.end(), [&](const std::pair<char, int> &a, const std::pair<char, int> &b)
          { return static_cast<double>(a.second) / totalSymbols > static_cast<double>(b.second) / totalSymbols; });
 
+    // system("chcp 65001 > nul");
+
+    // Print sorted frequency and probability table
     std::cout << "+--------+------------+---------------------+---------------------+---------------------+\n";
     std::cout << "| Символ | Частота    | Вероятность         | Длина кодового слова | Кодовое слово       |\n";
     std::cout << "+--------+------------+---------------------+---------------------+---------------------+\n";
@@ -695,6 +652,7 @@ void encodeMenuOption()
         int length = codeMap[symbol].length();
         std::string code = codeMap[symbol];
 
+        // (isprint(symbol) ? string(1, symbol) : " ")
         std::cout << "| " << std::setw(6) << symbol
                   << " | " << std::setw(10) << count
                   << " | " << std::setw(19) << probability
@@ -704,6 +662,7 @@ void encodeMenuOption()
 
     std::cout << "+--------+------------+---------------------+---------------------+---------------------+\n";
 
+    // Encode and write to output file
     std::ofstream outputFile("encoded_output.txt", std::ios::binary);
     if (!outputFile)
     {
@@ -719,6 +678,7 @@ void encodeMenuOption()
     }
 
     std::string encodedData;
+    // system("chcp 866 > nul");
     while (file.get(ch))
     {
         encodedData += codeMap[(int)ch];
@@ -733,6 +693,7 @@ void encodeMenuOption()
     file.close();
     outputFile.close();
 
+    // Calculate entropy and average code length
     double entropy = 0.0;
     for (const auto &pair : frequencies)
     {
@@ -748,11 +709,13 @@ void encodeMenuOption()
     }
 
     system("chcp 65001 > nul");
+    // Display entropy, average code length, and total encoded symbols
     int uniqueEncodedSymbols = frequencies.size();
     std::cout << "\nЭнтропия файла: " << entropy << std::endl;
     std::cout << "Средняя длина кодового слова: " << averageCodeLength << std::endl;
     std::cout << "Количество закодированных символов: " << uniqueEncodedSymbols << std::endl;
 
+    // Free Huffman tree memory
     freeHuffmanTree(root);
 
     std::cout << "\nНажмите любую клавишу для возврата в меню...\n";
@@ -790,7 +753,7 @@ int main()
         indexArray[i] = &records[i];
     }
 
-    queue *queueRecord = NULL;
+    Record **indexArrayKey;
     int index;
     int amount = 0;
 
@@ -803,7 +766,7 @@ int main()
     {
         printPage(n, indexArray, totalRecords);
         std::cout << "Страница " << page << "\n";
-        std::cout << "1 - Выход, 0 - Следующая страница, 9 - Предыдущая страница, 2 - Сортировать, 4 - Восстановить БД, 5 - Найти запись по номеру, 6 - Двоичный поиск по ключу, \n 7 - АВЛ-дерево, 8 - Кодировка : ";
+        std::cout << "1 - Выход, 0 - Следующая страница, 9 - Предыдущая страница, 2 - Сортировать, 4 - Восстановить БД, 5 - Найти запись по номеру, 6 - Двоичный поиск по ключу, \n 7 - АВЛ-дерево, 8 - Кодировка :";
         std::cin >> e;
 
         if (e == 0)
@@ -833,7 +796,7 @@ int main()
         }
         else if (e == 2)
         {
-            HeapSort(indexArray, totalRecords);
+            HeapSort(indexArray, totalRecords); // Сортировка по ключу K, вкладу и его
             std::cout << "Нажмите любую клавишу для продолжения...\n";
             std::cin.ignore();
             std::cin.get();
@@ -856,7 +819,7 @@ int main()
             std::cin >> recordNumber;
             if (recordNumber >= 1 && recordNumber <= totalRecords)
             {
-                n = (recordNumber - 1) / 20 * 20;
+                n = (recordNumber - 1) / 20 * 20; // Определяем страницу
                 page = (n / 20) + 1;
                 printPage(n, indexArray, totalRecords);
                 std::cout << "Страница " << page << "\n";
@@ -871,47 +834,45 @@ int main()
         }
         else if (e == 6)
         {
-            queueRecord = clearQueue(queueRecord);
             HeapSort(indexArray, totalRecords);
             int depositToFind;
             std::cout << "Введите ключ (сумма вклада): ";
             std::cin >> depositToFind;
             index = BinarySearch(indexArray, totalRecords, depositToFind);
             amount = findRecordsAmount(indexArray, totalRecords, depositToFind, amount);
-
-            queueRecord = requiredRecords(indexArray, queueRecord, index, amount);
+            indexArrayKey = new Record *[amount];
+            indexArrayKey = requiredRecords(indexArray, indexArrayKey, index, amount);
 
             int flag = 1;
             int choice = 0;
             int nKey = 0;
-            int pageKey = 1;
+            int pageKey = 0;
 
             while (flag)
             {
-                printQueue(nKey, queueRecord, amount);
+                printPage(nKey, indexArrayKey, amount);
                 std::cout << "Страница " << pageKey << "\n";
                 std::cout << "0 - Выход, 1 - Следующая страница, 2 - Предыдущая страница: ";
                 std::cin >> choice;
                 switch (choice)
                 {
                 case 1:
-                    nKey += 20;
-                    if (nKey >= amount)
+                    n += 20;
+                    if (n >= totalRecords)
                     {
                         std::cout << "Достигнут конец записей.\n";
-                        nKey -= 20;
+                        n -= 20;
                     }
                     else
                     {
-                        pageKey++;
+                        page++;
                     }
-                    break;
 
                 case 2:
-                    if (nKey >= 20)
+                    if (n >= 20)
                     {
-                        nKey -= 20;
-                        pageKey--;
+                        n -= 20;
+                        page--;
                     }
                     else
                     {
@@ -934,7 +895,7 @@ int main()
         }
         else if (e == 7)
         {
-            p = buildAVLTree(queueRecord, amount);
+            p = buildAVLTree(indexArrayKey, amount);
 
             printTableHeader();
             inOrderTraversal(p);
@@ -958,6 +919,7 @@ int main()
         }
         else if (e == 8)
         {
+            // system("chcp 866 > nul");
             encodeMenuOption();
         }
     }
